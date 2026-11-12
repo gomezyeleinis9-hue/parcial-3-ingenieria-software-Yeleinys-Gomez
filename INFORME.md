@@ -339,3 +339,50 @@ Estas son coberturas diseñadas. La medición real con pytest-cov y sus evidenci
 
 Entrada heredada: `calc(10, "urbana", "normal", 1, None, flag=True)`. El valor de retorno esperado por R1–R8 es $9.000. En `v1.0.0`, además, se imprime `costo: 9000`; esta salida permite ejecutar la rama verdadera de `flag`. La refactorización eliminará el argumento y esa impresión, como solicita la Parte 6.
 
+
+## Parte 5. Automatización, ejecución y defectos
+
+### 5.1 Automatización y ejecución de `v1.0.0`
+
+La suite `tests/test_envios.py` ejecuta los 32 casos BB de la Parte 3 y el caso WB-01 para la rama heredada `flag=True` (33 pruebas en total). Los resultados esperados se calcularon a mano antes de ejecutar el código.
+
+Comando utilizado desde la raíz del proyecto:
+
+```powershell
+uv run --no-project --with pytest --with pytest-cov --python <python-del-entorno> -- python -m pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-report=xml:evidencias/coverage-legacy.xml --junitxml=evidencias/junit-legacy.xml tests/test_envios.py
+```
+
+La salida de consola está en `evidencias/salida-legacy.txt`; `evidencias/junit-legacy.xml` conserva el detalle de cada prueba y `evidencias/coverage-legacy.xml` conserva la medición. El comando devolvió código 1 por las fallas reproducidas abajo: **16 aprobadas y 17 fallidas**. La captura de pantalla de terminal que pide el parcial todavía está pendiente; no se presenta el registro textual como si fuera una captura.
+
+### 5.2 Reporte de defectos
+
+| ID | Título y requisito | Pasos para reproducir | Resultado esperado | Resultado obtenido en `v1.0.0` | Severidad / prioridad |
+|---|---|---|---|---|---|
+| DEF-01 | Mensaje del peso fuera de rango no coincide con R1 | Ejecutar BB-01, BB-02 o BB-12. | `ValueError("peso inválido")` | `ValueError("peso invalido")`, sin tilde. | **Media / P2:** el peso se rechaza, pero incumple el mensaje exigido. |
+| DEF-02 | No se valida la zona (R2) | Ejecutar BB-13 con zona `exterior`. | Rechazar la zona no permitida con un error. | No lanza error; devuelve $9.000. | **Alta / P1:** acepta una entrada fuera del dominio y cotiza como válida. |
+| DEF-03 | No se valida el dominio del día (R2) | Ejecutar BB-14 (`d=0`), BB-28 (`d=8`) y BB-30 (`d=6,5`). | Rechazar todo día que no sea entero entre 1 y 7. | Día 0 retorna $9.000; día 8 y 6,5 se tratan como fin de semana y retornan $11.000. | **Alta / P1:** acepta días inválidos y puede añadir un recargo improcedente. |
+| DEF-04 | El sábado no recibe el recargo (R5) | Ejecutar BB-15 con peso 10 kg, zona urbana, cliente normal y día 6. | $9.000 + $2.000 = $11.000. | Devuelve $9.000 porque la condición del legado solo reconoce `d > 6`. | **Alta / P1:** subcobra los envíos de sábado en $2.000. |
+| DEF-05 | Se trunca en vez de redondear a la centena (R8) | Ejecutar BB-10, BB-20, BB-21, BB-23, BB-24, BB-25, BB-31 y BB-32. | Redondear al múltiplo de $100 más cercano, con empate hacia arriba. | Devuelve, respectivamente, $9.000, $8.500, $7.600, $7.600, $6.800, $7.600, $13.200 y $40.900; los esperados son $9.100, $8.600, $7.700, $7.700, $6.900, $7.700, $13.300 y $41.000. | **Alta / P1:** calcula mal cualquier resultado con residuo monetario no nulo. |
+| DEF-06 | Peso no numérico produce `TypeError` (R1) | Ejecutar BB-29 con `p="no-numérico"`. | Rechazar con el error de peso definido en R1. | La comparación `p <= 0` genera `TypeError` (`str` frente a `int`). | **Media / P2:** rechaza por accidente, pero no mantiene el contrato de validación. |
+
+**Priorización.** DEF-02 a DEF-05 son P1 porque afectan entradas aceptadas o importes cobrados. DEF-01 y DEF-06 son P2 porque los datos se rechazan, pero con un contrato de error incorrecto.
+
+### 5.3 Métricas de la primera ejecución
+
+| Métrica | Cálculo | Resultado |
+|---|---|---:|
+| Casos aprobados | 16 / 33 × 100 | **48,48 %** |
+| Casos fallidos | 17 / 33 × 100 | **51,52 %** |
+| Defectos por severidad | 4 altos, 2 medios, 0 bajos | **6 defectos** |
+| Densidad de defectos | 6 / 40 líneas físicas de `src/envios.py` × 100 | **15 por cada 100 líneas** |
+| Cobertura de sentencias | 29 / 29 | **100 %** |
+| Cobertura de ramas | 26 / 26 | **100 %** |
+
+La cobertura indica que se recorrieron las sentencias y ramas medidas; las 17 fallas demuestran que esa cobertura no garantiza que la salida sea correcta.
+
+### 5.4 Defectos vinculados a requisitos y casos
+
+- R1: DEF-01 y DEF-06, reproducidos con BB-01, BB-02, BB-12 y BB-29.
+- R2: DEF-02 y DEF-03, reproducidos con BB-13, BB-14, BB-28 y BB-30.
+- R5: DEF-04, reproducido con BB-15; BB-16 confirma que el domingo sí recibe recargo.
+- R8: DEF-05, reproducido con BB-10, BB-20, BB-21, BB-23, BB-24, BB-25, BB-31 y BB-32.
