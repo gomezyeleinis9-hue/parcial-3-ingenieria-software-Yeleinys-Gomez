@@ -466,7 +466,7 @@ El repositorio conserva la línea base heredada con la etiqueta v1.0.0. La suite
 | Ramas fix/DEF-01 a fix/DEF-06 | Creadas, probadas y fusionadas en main. |
 | Rama test/part8-insular | Casos R9 creados primero y fusionados en main. |
 | Rama feature/part8-insular | Funcionalidad implementada, cinco casos aprobados y fusionada en main. |
-| Rama refactor/estrategia | Creada; pendiente de fusionar después de actualizar el registro. |
+| Rama refactor/estrategia | Creada, probada y fusionada en main. |
 | Etiqueta posterior | v2.0.0 por el cambio incompatible de la interfaz pública; se publicará al cerrar la integración validada. |
 
 ### 7.2 Criterio de versionado semántico
