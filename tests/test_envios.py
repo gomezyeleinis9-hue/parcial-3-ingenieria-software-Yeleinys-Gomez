@@ -1,9 +1,9 @@
-"""Suite de caja negra y prueba de rama para el código heredado de EnvíaYa."""
+"""Suite de caja negra para R1-R9 del cotizador EnvíaYa."""
 import re
 
 import pytest
 
-from src.envios import calc
+from src.envios import calculate_shipping_cost
 
 
 CASES = [
@@ -47,18 +47,13 @@ def test_matriz_caja_negra(args, expected):
     if isinstance(expected, tuple) and expected[0] == "ValueError":
         if expected[1] is None:
             with pytest.raises(ValueError):
-                calc(*args)
+                calculate_shipping_cost(*args)
         else:
             with pytest.raises(ValueError, match=re.escape(expected[1])):
-                calc(*args)
+                calculate_shipping_cost(*args)
     else:
-        assert calc(*args) == expected
+        assert calculate_shipping_cost(*args) == expected
 
-
-def test_camino_wb_01_flag_heredado(capsys):
-    resultado = calc(10, "urbana", "normal", 1, None, True)
-    assert resultado == 9000
-    assert capsys.readouterr().out == "costo: 9000\n"
 
 INSULAR_CASES = [
     pytest.param((10, "insular", "normal", 1, None), 15300, id="IN-01"),
@@ -74,9 +69,9 @@ def test_regla_r9_zona_insular(args, expected):
     if isinstance(expected, tuple) and expected[0] == "ValueError":
         if expected[1] is None:
             with pytest.raises(ValueError):
-                calc(*args)
+                calculate_shipping_cost(*args)
         else:
             with pytest.raises(ValueError, match=re.escape(expected[1])):
-                calc(*args)
+                calculate_shipping_cost(*args)
     else:
-        assert calc(*args) == expected
+        assert calculate_shipping_cost(*args) == expected

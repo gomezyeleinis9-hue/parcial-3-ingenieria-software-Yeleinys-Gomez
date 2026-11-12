@@ -239,6 +239,7 @@ Entradas en orden: peso en kg, zona, cliente, día y cupón. Los decimales de es
 | R6 — Descuentos | HU-03 | BB-20 a BB-24, BB-26, BB-31 |
 | R7 — Cupón desconocido | HU-03 | BB-25 |
 | R8 — Piso y redondeo | HU-03 | BB-09, BB-10, BB-20, BB-21, BB-23 a BB-26, BB-31 |
+| R9 — Zona insular | HU-02 | IN-01 a IN-05 |
 
 
 
@@ -389,7 +390,7 @@ La cobertura indica que se recorrieron las sentencias y ramas medidas; las 17 fa
 
 ## Parte 6. Refactorización y mantenimiento
 
-> **Estado de esta sección:** análisis y diseño documentados. La refactorización, las pruebas de regresión, la medición posterior y sus capturas quedan pendientes de ejecución; se completarán con los resultados reales.
+> **Estado:** refactorización implementada en refactor/estrategia; la suite completa aprobó 37/37 casos. Las capturas siguen pendientes para que las agregue la estudiante.
 
 ### 6.1 Identificación de code smells
 
@@ -410,30 +411,49 @@ La cobertura indica que se recorrieron las sentencias y ramas medidas; las 17 fa
 - **Preventivo:** conservar pruebas de regresión para cada regla y dejar decisiones de tarifa aisladas para reducir el riesgo de defectos al mantener el sistema.
 - **Adaptativo:** incorporar la nueva zona insular y su recargo de 70 % en la Parte 8.
 
-### 6.3 Diseño propuesto de refactorización
+### 6.3 Diseño aplicado de refactorización
 
-La función de cotización quedará como coordinadora de pasos pequeños: validar entrada, calcular tarifa base, obtener el recargo de zona, aplicar fin de semana y descuentos en el orden especificado, aplicar mínimo y redondeo. Las tarifas y porcentajes pasarán a constantes con nombres explicativos. La lógica de zona se aislará detrás de una estrategia o tabla de políticas para permitir añadir la zona insular sin extender una cadena de condicionales.
+La función calculate_shipping_cost coordina pasos separados: validar entrada, calcular tarifa base, obtener el recargo de zona, aplicar fin de semana y descuentos en el orden especificado, aplicar mínimo y redondeo. Las tarifas y porcentajes están centralizados en constantes. ZONE_POLICIES aplica el patrón Strategy mediante ZonePolicy y PercentageSurcharge; la zona insular quedó añadida a esa tabla.
 
-Se eliminará flag y la impresión de diagnóstico: la cotización será una función sin efectos laterales. Los errores de validación seguirán respetando los mensajes definidos en R1 y R2. La implementación se hará en cambios pequeños y cada cambio deberá conservar o corregir el comportamiento mediante la suite de regresión.
+Se eliminaron flag y la impresión de diagnóstico; calculate_shipping_cost no tiene efectos laterales. Los errores de validación respetan los mensajes definidos en R1 y R2. El cambio de interfaz de calc a calculate_shipping_cost es incompatible con consumidores que usaran la función anterior, por lo que se documenta como cambio MAJOR.
 
-Diseño UML propuesto: CotizadorEnvios depende de una interfaz PoliticaZona, implementada por ZonaUrbana, ZonaRural, ZonaNacional y ZonaInsular. El cotizador valida la entrada, calcula la tarifa base, solicita la política de zona y aplica descuentos y redondeo.
+Diseño UML de clases asociado a la implementación:
+
+```mermaid
+classDiagram
+    class ShippingCalculator {
+      +calculate_shipping_cost(weight, zone, customer, day, coupon)
+    }
+    class ZonePolicy {
+      +apply(price)
+    }
+    class PercentageSurcharge {
+      +rate
+      +apply(price)
+    }
+    ShippingCalculator --> ZonePolicy : ZONE_POLICIES
+    ZonePolicy <|-- PercentageSurcharge
+```
 
 ### 6.4 Comparación antes y después
 
 | Indicador | Antes: v1.0.0 medido | Después de refactorizar |
 |---|---:|---:|
-| Líneas físicas de src/envios.py | 40 | Pendiente de medir |
-| Complejidad ciclomática de la función heredada | 15 según el grafo de la Parte 4 | Pendiente de medir por función y total |
-| Cobertura de sentencias | 100 % (29/29), con 17 fallas funcionales | Pendiente de ejecutar regresión |
-| Cobertura de ramas | 100 % (26/26), con 17 fallas funcionales | Pendiente de ejecutar regresión |
-| Pruebas aprobadas | 16/33 | Pendiente de ejecutar regresión |
-| Pruebas fallidas | 17/33 | Pendiente; se espera cero fallas para R1–R8 |
+| Líneas físicas de src/envios.py | 40 | 76 |
+| Complejidad ciclomática | 15 en calc heredada | máximo 8 en _validate_input; coordinadora 2 |
+| Cobertura de sentencias | 100 % (29/29), con 17 fallas funcionales | 100 % (61/61), 0 sin cubrir |
+| Cobertura de ramas | 100 % (26/26), con 17 fallas funcionales | 100 % (14/14), 0 parciales |
+| Pruebas aprobadas | 16/33 | 37/37 |
+| Pruebas fallidas | 17/33 | 0/37 |
 
-La cobertura alta del legado no significa que su comportamiento sea correcto: la primera ejecución detectó seis defectos. Las columnas posteriores se completarán después de implementar y medir la refactorización; no se estiman valores.
+La cobertura alta del legado no garantizaba resultados correctos: la ejecución inicial detectó seis defectos. Tras la refactorización, los 37 casos pasaron y las mediciones finales quedaron registradas en la tabla.
+
+
+Radon midió complejidad máxima 8 en _validate_input y 2 en calculate_shipping_cost. La complejidad quedó distribuida entre funciones pequeñas; se redujo el máximo por función de 15 a 8. DEF-01 a DEF-06 quedaron corregidos y la cobertura de ramas final fue 14/14.
 
 ## Parte 7. Gestión de versiones y cambios
 
-> **Estado de esta sección:** se documentan la línea base y la estrategia. Las ramas de corrección, la refactorización, el changelog final y la versión posterior se registrarán al ejecutarlos; no se presentan como realizados.
+> **Estado:** las ramas de pruebas y correcciones se crearon y fusionaron; la refactorización quedó en su rama. El changelog y el etiquetado final se actualizarán tras integrar y validar main.
 
 ### 7.1 Línea base y flujo de trabajo
 
@@ -443,17 +463,19 @@ El repositorio conserva la línea base heredada con la etiqueta v1.0.0. La suite
 |---|---|
 | Etiqueta base v1.0.0 | Creada para el cálculo heredado. |
 | Rama test/suite | Creada y fusionada en main. |
-| Ramas fix/DEF-01 a fix/DEF-06 | Pendientes de crear al corregir cada defecto. |
-| Rama refactor/estrategia | Pendiente de crear para el cambio estructural. |
-| Etiqueta posterior | Se decidirá después de revisar el alcance y validar las pruebas. |
+| Ramas fix/DEF-01 a fix/DEF-06 | Creadas, probadas y fusionadas en main. |
+| Rama test/part8-insular | Casos R9 creados primero y fusionados en main. |
+| Rama feature/part8-insular | Funcionalidad implementada, cinco casos aprobados y fusionada en main. |
+| Rama refactor/estrategia | Creada; pendiente de fusionar después de actualizar el registro. |
+| Etiqueta posterior | v2.0.0 por el cambio incompatible de la interfaz pública; se publicará al cerrar la integración validada. |
 
 ### 7.2 Criterio de versionado semántico
 
-Se parte de v1.0.0. Una corrección compatible con la interfaz se versionaría como PATCH. Una funcionalidad compatible añadida se versionaría como MINOR. Si se elimina flag de una interfaz pública que consumidores ya usan, el cambio rompe compatibilidad y requiere MAJOR; por ello la decisión entre v1.1.0 y v2.0.0 se confirmará al revisar si esa interfaz forma parte del contrato entregado. No se asigna una etiqueta nueva antes de integrar y validar el cambio.
+Se parte de v1.0.0. Una corrección compatible con la interfaz se versionaría como PATCH. Una funcionalidad compatible añadida se versionaría como MINOR. Se eliminó flag junto con la interfaz heredada calc y se sustituyó por calculate_shipping_cost; al ser un cambio incompatible, corresponde el incremento MAJOR a v2.0.0. La etiqueta se publicará tras validar la integración.
 
 ### 7.3 Registro de cambios
 
-Se mantendrá un CHANGELOG.md separado como artefacto de versionado del repositorio; el informe de las Partes 1–8 continúa en este único INFORME.md. El changelog seguirá secciones Unreleased y una sección por versión, con categorías Added, Changed, Fixed y Removed. Cada entrada se agregará cuando el cambio correspondiente exista y se haya verificado.
+El repositorio incluye CHANGELOG.md como artefacto de versionado; el informe de las Partes 1–8 continúa en este único INFORME.md. El changelog registra la versión de línea base y el cambio 2.0.0 con categorías Added, Changed, Fixed y Removed.
 
 ### 7.4 Historial verificable
 
@@ -461,7 +483,7 @@ El historial de Git se utilizará para mostrar el orden real de los avances y la
 
 ## Parte 8. Análisis de impacto: nueva zona insular
 
-> **Estado de esta sección:** requisito derivado de los parámetros individuales; implementación y pruebas quedan pendientes. La evidencia se agregará después de ejecutarlas.
+> **Estado:** R9 quedó implementada y sus cinco casos de aceptación pasaron; la suite total aprobó 37/37. Las capturas de ejecución se agregarán posteriormente por la estudiante.
 
 ### 8.1 Regla nueva y parámetro individual
 
@@ -471,12 +493,12 @@ Para el identificador 0182410068, los dígitos de parametrización son A=4, B=1,
 
 | Componente | Impacto previsto | Acción |
 |---|---|---|
-| Requisitos y trazabilidad | Se amplía R2 con la zona insular y se agrega R9. | Añadir filas de cobertura para zona insular y regla de cupón. |
-| Validación de zonas | insular deja de ser entrada inválida. | Aceptarla explícitamente y seguir rechazando zonas desconocidas. |
-| Cálculo de tarifa | Debe sumar 70 % a la tarifa aplicable. | Incorporar RECARGO_INSULAR = 0.70 en la política de zona. |
-| Descuentos | El cupón no aplica a envíos insulares. | Evitar descuento de cupón en esa zona; conservar las reglas de cliente que no contradigan R9. |
-| Pruebas | Cambian particiones y tabla de decisión para la nueva zona. | Escribir primero pruebas de aceptación de R9 y regresión de R1–R8. |
-| Versionado y documentación | Cambia el alcance funcional del producto. | Actualizar CHANGELOG.md y escoger MINOR o MAJOR según compatibilidad de interfaz. |
+| Requisitos y trazabilidad | Se amplió R2 con la zona insular y se agregó R9. | Se añadieron los casos IN-01 a IN-05 a la trazabilidad. |
+| Validación de zonas | insular dejó de ser entrada inválida. | Aceptada explícitamente; las zonas desconocidas siguen rechazándose. |
+| Cálculo de tarifa | Suma 70 % a la tarifa aplicable. | RECARGO_INSULAR = 0.70 en la política de zona. |
+| Descuentos | El cupón no aplica a envíos insulares. | La política ignora el cupón para esa zona y conserva los descuentos de cliente. |
+| Pruebas | Se ampliaron particiones y tabla de decisión para la nueva zona. | Los cinco casos de aceptación R9 y la regresión completa pasaron. |
+| Versionado y documentación | Cambió el alcance funcional y la interfaz pública. | CHANGELOG.md registra el cambio; se asignará v2.0.0 por el cambio incompatible. |
 
 ### 8.3 Casos nuevos previstos
 
@@ -488,13 +510,17 @@ Para el identificador 0182410068, los dígitos de parametrización son A=4, B=1,
 | IN-04 | 51 kg, insular, cliente normal, día 1, sin cupón | ValueError("peso inválido"); R1 sigue teniendo prioridad. |
 | IN-05 | 10 kg, zona exterior, cliente normal, día 1, sin cupón | Error de zona; añadir una zona válida no debe aceptar zonas desconocidas. |
 
-Los importes de IN-01 a IN-03 se calcularon aplicando R3, R4/R9, R5 y R6 en el orden definido. La ejecución automatizada y la confirmación de estos resultados quedan pendientes para la etapa de pruebas.
+Los importes de IN-01 a IN-03 se calcularon aplicando R3, R4/R9, R5 y R6 en el orden definido y fueron confirmados por las pruebas automatizadas.
 
-### 8.4 Estrategia de implementación y aceptación
+### 8.4 Implementación y aceptación
 
-1. Crear una rama de funcionalidad desde main.
-2. Añadir primero las pruebas IN-01 a IN-05 y comprobar que IN-01 a IN-03 fallen antes de implementar R9, mientras IN-04 e IN-05 conservan sus validaciones.
-3. Implementar la política insular del 70 % y la exclusión de cupón para esa zona.
-4. Ejecutar la suite completa de regresión de R1–R9 y revisar cobertura.
-5. Actualizar trazabilidad, tabla de decisión y CHANGELOG.md; integrar el cambio y etiquetar la versión solo después de verificarlo.
-6. Guardar las capturas de ejecución, cobertura, historial y cambios en evidencias/. Esta carpeta queda a cargo de la estudiante para su recopilación paso a paso.
+1. Se creó la rama feature/part8-insular desde main.
+2. Se añadieron primero los cinco casos IN-01 a IN-05; antes del cambio, las pruebas reprodujeron las fallas de zona y cupón.
+3. Se implementó el recargo insular del 70 % y se excluyó el cupón promocional en esa zona; los cinco casos pasaron.
+4. La suite de regresión completa aprobó 37/37 pruebas, con 100 % de cobertura de sentencias y ramas.
+5. Se actualizó CHANGELOG.md; la etiqueta final se creará después de integrar y validar main.
+6. Las capturas de ejecución, cobertura e historial siguen pendientes y las agregará la estudiante en evidencias/.
+
+### 8.5 Resultado de aceptación
+
+IN-01 a IN-05 pasaron en la rama de funcionalidad antes de integrarla. La suite completa posterior a la refactorización también pasó: 37 pruebas aprobadas, cobertura de sentencias 61/61 y cobertura de ramas 14/14. La salida visual para evidencias aún debe capturarse en el equipo de la estudiante.
