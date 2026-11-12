@@ -352,7 +352,7 @@ Comando utilizado desde la raíz del proyecto:
 uv run --no-project --with pytest --with pytest-cov --python <python-del-entorno> -- python -m pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-report=xml:evidencias/coverage-legacy.xml --junitxml=evidencias/junit-legacy.xml tests/test_envios.py
 ```
 
-La salida de consola está en `evidencias/salida-legacy.txt`; `evidencias/junit-legacy.xml` conserva el detalle de cada prueba y `evidencias/coverage-legacy.xml` conserva la medición. El comando devolvió código 1 por las fallas reproducidas abajo: **16 aprobadas y 17 fallidas**. La captura de pantalla de terminal que pide el parcial todavía está pendiente; no se presenta el registro textual como si fuera una captura.
+El comando devolvió código 1 por las fallas reproducidas abajo: **16 aprobadas y 17 fallidas**. La carpeta videncias/ se dejó vacía para que la estudiante agregue personalmente, paso a paso, las capturas y demás soportes solicitados por el parcial.
 
 ### 5.2 Reporte de defectos
 
