@@ -7,6 +7,7 @@ CONFIG = {
     "L2": 10,
     "RECARGO_RURAL": 0.20,
     "RECARGO_NACIONAL": 0.50,
+    "RECARGO_INSULAR": 0.70,
     "DESC_VIP": 0.15,
     "RECARGO_FINDE": 2000,
 }
@@ -16,7 +17,7 @@ def calc(p, z, c, d, cup=None, flag=False):
         raise ValueError("peso inv\u00e1lido")
     if type(d) is not int or not 1 <= d <= 7:
         raise ValueError("dia invalido")
-    if z not in ("urbana", "rural", "nacional"):
+    if z not in ("urbana", "rural", "nacional", "insular"):
         raise ValueError("zona inv\u00e1lida")
     if p <= CONFIG["L1"]:
         t = 6000
@@ -30,6 +31,8 @@ def calc(p, z, c, d, cup=None, flag=False):
         t = t + t * CONFIG["RECARGO_RURAL"]
     elif z == "nacional":
         t = t + t * CONFIG["RECARGO_NACIONAL"]
+    elif z == "insular":
+        t = t + t * CONFIG["RECARGO_INSULAR"]
     # fin de semana
     if d >= 6:
         t = t + CONFIG["RECARGO_FINDE"]
@@ -37,7 +40,7 @@ def calc(p, z, c, d, cup=None, flag=False):
         t = t - t * 0.05
     if c == "vip":
         t = t - t * CONFIG["DESC_VIP"]
-    if cup != None:
+    if cup is not None and z != "insular":
         if cup == "ENVIO10":
             t = t - t * 0.10
     if t < 5000:
