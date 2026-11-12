@@ -1,4 +1,6 @@
 # envios.py - c?digo heredado, versi?n 1.0.0
+from decimal import Decimal, ROUND_HALF_UP
+
 CONFIG = {
     "L1": 3,
     "L2": 10,
@@ -41,4 +43,5 @@ def calc(p, z, c, d, cup=None, flag=False):
         t = 5000
     if flag:
         print("costo:", t)
-    return int(t / 100) * 100
+    centenas = (Decimal(str(t)) / Decimal("100")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    return int(centenas * 100)
