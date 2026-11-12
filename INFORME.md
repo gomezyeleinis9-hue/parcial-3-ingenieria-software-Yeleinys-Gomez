@@ -19,7 +19,7 @@ Los seis últimos dígitos de `0182410068` son `410068`; en orden: **A=4, B=1, C
 
 **Reglas de paridad:** D=0 es par, así que el tramo 1 incluye `peso = 3 kg`; E=6 es par, así que el recargo de fin de semana se suma antes de los descuentos; B=1 es impar, así que se aplican los descuentos de cliente y cupón de manera secuencial, primero cliente y luego cupón; F=8 es par, así que un cupón desconocido se ignora.
 
-La solicitud asignada por CAMBIO=0 es añadir la zona insular con 70 % de recargo y sin cupones. Se analizará e implementará como evolución en la Parte 8.
+La solicitud asignada por CAMBIO=0 fue añadir la zona insular con 70 % de recargo y sin cupones. Se implementó y evaluó como evolución en la Parte 8.
 
 ## 1.2 Especificación del cálculo (R1–R8)
 
@@ -87,7 +87,7 @@ Los IDs de casos se incorporarán al diseñar la caja negra en la Parte 3.
 
 ### 2.1 Alcance
 
-El plan cubre el cálculo de costos de EnvíaYa definido en R1–R8: validación de peso, zona y día; tramos de tarifa; recargos rural y nacional; recargo de sábado y domingo; descuentos de cliente y cupón; tratamiento de cupón desconocido; piso de $5.000 y redondeo a $100. La solicitud asignada de zona insular (R9) se incorporará al plan de regresión cuando se analice e implemente en la Parte 8.
+El plan cubre el cálculo de costos de EnvíaYa definido en R1–R8: validación de peso, zona y día; tramos de tarifa; recargos rural y nacional; recargo de sábado y domingo; descuentos de cliente y cupón; tratamiento de cupón desconocido; piso de $5.000 y redondeo a $100. La solicitud asignada de zona insular (R9) se incorporó al plan de regresión y se evaluó en la Parte 8.
 
 Se probará el módulo de cálculo desde su función pública, primero con el código heredado y después de corregir/refactorizarlo. No se incluyen interfaz gráfica, persistencia, pagos, integraciones con transportadoras ni rendimiento de un sistema de producción.
 
@@ -104,7 +104,7 @@ Se probará el módulo de cálculo desde su función pública, primero con el c�
 
 **Estrategia.** Derivar casos de particiones de equivalencia, valores límite y tabla de decisión; diseñar caminos independientes para caja blanca; calcular a mano al menos cinco resultados; escribir primero las pruebas de la solicitud de cambio; ejecutar la regresión después de cada corrección. Medir cobertura de sentencias y ramas y conservar la salida real. Una cobertura alta no se considerará prueba suficiente de corrección.
 
-**Ambiente.** Windows y Python 3.12.14 en el entorno de trabajo observado. La suite se ejecutará con pytest y pytest-cov, administrados con uv. Al dejar el comando definitivo en el informe se anotarán las versiones exactas de pytest y pytest-cov, el commit evaluado y la fecha de ejecución. Git conservará la línea base y las ramas de trabajo.
+**Ambiente.** Windows y Python 3.11.0-final-0, según la salida de pytest-cov adjunta. El entorno de pruebas registra pytest 9.2.0 y pytest-cov 7.1.0, declarados en `requirements.txt` y ejecutados con uv. La ejecución heredada corresponde a la etiqueta `v1.0.0`; la regresión final se documenta en la evidencia de la versión `v2.0.0`.
 
 **Roles.** La estudiante actúa como analista de requisitos, diseñadora y ejecutora de pruebas, y responsable del mantenimiento del código. El docente evalúa el informe y dirige la sustentación dinámica indicada en el parcial.
 
@@ -206,7 +206,7 @@ Entradas en orden: peso en kg, zona, cliente, día y cupón. Los decimales de es
 | BB-29 | R1 | `("no-numérico", urbana, normal, 1, —)` | Error de peso | Partición inválida de tipo |
 | BB-30 | R2 | `(10, urbana, normal, 6,5, —)` | Error por día no entero | Partición inválida de tipo |
 | BB-31 | R3–R6, R8 | `(9.5, nacional, frecuente, 7, ENVIO10)` | $13.300 | Decisión combinada con peso decimal |
-| BB-32 | R1, R3 | (49.99, urbana, normal, 1, —) | .000 | Límite inferior de PMAX |
+| BB-32 | R1, R3 | `(49.99, urbana, normal, 1, —)` | $41.000 | Límite inferior de PMAX |
 
 ### 3.5 Cálculos manuales de resultados esperados
 
@@ -345,10 +345,10 @@ La suite `tests/test_envios.py` ejecuta los 32 casos BB de la Parte 3 y el caso 
 Comando utilizado desde la raíz del proyecto:
 
 ```powershell
-uv run --no-project --with pytest --with pytest-cov --python <python-del-entorno> -- python -m pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-report=xml:evidencias/coverage-legacy.xml --junitxml=evidencias/junit-legacy.xml tests/test_envios.py
+uv run --no-project --with pytest==9.2.0 --with pytest-cov==7.1.0 -- python -m pytest -q --cov=src --cov-branch --cov-report=term-missing tests/test_envios.py
 ```
 
-El comando devolvió código 1 por las fallas reproducidas abajo: **16 aprobadas y 17 fallidas**. La carpeta videncias/ se dejó vacía para que la estudiante agregue personalmente, paso a paso, las capturas y demás soportes solicitados por el parcial.
+La ejecución de la línea base devolvió código 1: **16 pruebas aprobadas y 17 fallidas**, como muestra la captura 5.1. La evidencia de cobertura registra 29 sentencias y 26 ramas recorridas; las fallas funcionales se describen a continuación.
 
 ### 5.2 Reporte de defectos
 
@@ -391,19 +391,19 @@ La cobertura indica que se recorrieron las sentencias y ramas medidas; las 17 fa
 
 ## Parte 6. Refactorización y mantenimiento
 
-> **Estado:** refactorización implementada en refactor/estrategia; la suite completa aprobó 37/37 casos. Las capturas siguen pendientes para que las agregue la estudiante.
+> **Estado:** refactorización integrada en `main`; la suite final aprobó 37/37 casos. Las capturas de regresión y complejidad se adjuntan en esta sección.
 
 ### 6.1 Identificación de code smells
 
 | Líneas de src/envios.py en v1.0.0 | Code smell observado | Efecto en el mantenimiento | Tipo relacionado |
 |---|---|---|---|
-| 11–40 | La función calc concentra validación, tarifa, zona, recargos, descuentos, piso, redondeo e impresión. | Un cambio en una regla obliga a revisar una función con varias responsabilidades. | Perfectivo; los defectos encontrados también requieren mantenimiento correctivo. |
-| 11 | Nombre genérico calc y parámetros abreviados p, z, c, d. | La intención de cada dato no se entiende sin rastrear todo el cuerpo de la función. | Perfectivo. |
-| 11, 38–39 | Parámetro flag controla una impresión desde la función que calcula el envío. | Mezcla cálculo y salida por consola; complica el uso de la función y las pruebas. | Perfectivo. |
-| 15, 17, 19, 29–40 | Números mágicos para tarifas, descuentos, mínimos y redondeo. | La misma regla puede quedar expresada de forma inconsistente en distintos lugares. | Perfectivo y preventivo. |
-| 20–21 | Rama urbana redundante: t = t. | Agrega una ruta que no cambia el resultado y hace más difícil leer la lógica de zonas. | Perfectivo. |
-| 20–25 | Condicionales encadenados para cada zona dentro de calc. | Añadir o cambiar una zona aumenta el acoplamiento de la función central. | Perfectivo; el cambio insular de la Parte 8 es adaptativo. |
-| 33 | Comparación cup != None. | La comprobación es menos clara que la forma idiomática cup is not None. | Perfectivo. |
+| 11–40 | **Long Method:** `calc` concentra validación, tarifa, zona, recargos, descuentos, piso, redondeo e impresión. | Un cambio en una regla obliga a revisar una función con varias responsabilidades y eleva el riesgo de regresión. | Perfectivo; los defectos también requieren mantenimiento correctivo. |
+| 11 | **Mysterious Name:** nombre genérico `calc` y parámetros abreviados `p`, `z`, `c`, `d`. | La intención de cada dato no se entiende sin rastrear el cuerpo de la función, lo que ralentiza cambios y revisiones. | Perfectivo. |
+| 11, 38–39 | **Flag Argument:** `flag` controla una impresión desde la función que calcula el envío. | Mezcla cálculo y salida por consola, amplía las combinaciones de comportamiento y complica pruebas y consumidores. | Perfectivo. |
+| 15, 17, 19, 29–40 | **Magic Numbers:** valores literales para tarifas, descuentos, mínimo y redondeo. | La misma regla puede quedar expresada de forma inconsistente en distintos lugares. | Perfectivo y preventivo. |
+| 20–21 | **Dead Code (rama redundante):** la zona urbana ejecuta `t = t`. | Agrega una ruta que no cambia el resultado y oculta la lógica realmente necesaria. | Perfectivo. |
+| 20–25 | **Switch Statements:** condicionales encadenados deciden el recargo según la zona dentro de `calc`. | Cada zona nueva obliga a modificar la función central y aumenta su acoplamiento. | Perfectivo; el cambio insular es adaptativo. |
+| 23, 25 | **Duplicate Code:** los recargos rural y nacional repiten el mismo cálculo porcentual. | Una modificación puede aplicarse a una zona y omitirse en la otra, generando divergencias. | Perfectivo. |
 
 ### 6.2 Clasificación del mantenimiento
 
@@ -414,11 +414,11 @@ La cobertura indica que se recorrieron las sentencias y ramas medidas; las 17 fa
 
 ### 6.3 Diseño aplicado de refactorización
 
-La función calculate_shipping_cost coordina pasos separados: validar entrada, calcular tarifa base, obtener el recargo de zona, aplicar fin de semana y descuentos en el orden especificado, aplicar mínimo y redondeo. Las tarifas y porcentajes están centralizados en constantes. ZONE_POLICIES aplica el patrón Strategy mediante ZonePolicy y PercentageSurcharge; la zona insular quedó añadida a esa tabla.
+La función `calculate_shipping_cost` coordina pasos separados: validar entrada, calcular tarifa base, obtener el recargo de zona, aplicar fin de semana y descuentos en el orden especificado, aplicar mínimo y redondeo. Las tarifas y porcentajes están centralizados en constantes. `ZONE_POLICIES` selecciona estrategias que implementan `ZonePolicy` y `PercentageSurcharge`; la zona insular quedó añadida a esa tabla.
 
-Se eliminaron flag y la impresión de diagnóstico; calculate_shipping_cost no tiene efectos laterales. Los errores de validación respetan los mensajes definidos en R1 y R2. El cambio de interfaz de calc a calculate_shipping_cost es incompatible con consumidores que usaran la función anterior, por lo que se documenta como cambio MAJOR.
+Se eliminaron `flag` y la impresión de diagnóstico; `calculate_shipping_cost` no tiene efectos laterales. Los errores de validación respetan los mensajes definidos en R1 y R2. El cambio de interfaz de `calc` a `calculate_shipping_cost` es incompatible con consumidores que usaran la función anterior, por lo que se documenta como cambio MAJOR.
 
-Diseño UML de clases asociado a la implementación:
+El diagrama modela conceptualmente la fachada pública de cálculo como `ShippingCalculator`; en el código Python, esa operación está implementada como función de módulo `calculate_shipping_cost`, no como una clase. `ZonePolicy` y `PercentageSurcharge` son las clases de estrategia implementadas. La función selecciona una política de `ZONE_POLICIES` y aplica su método `apply`.
 
 ```mermaid
 classDiagram
@@ -440,7 +440,7 @@ classDiagram
 
 | Indicador | Antes: v1.0.0 medido | Después de refactorizar |
 |---|---:|---:|
-| Líneas físicas de src/envios.py | 40 | 76 |
+| Líneas físicas de src/envios.py | 40 | 98 |
 | Complejidad ciclomática | 15 en calc heredada | máximo 8 en _validate_input; coordinadora 2 |
 | Cobertura de sentencias | 100 % (29/29), con 17 fallas funcionales | 100 % (61/61), 0 sin cubrir |
 | Cobertura de ramas | 100 % (26/26), con 17 fallas funcionales | 100 % (14/14), 0 parciales |
@@ -468,7 +468,7 @@ Radon midió complejidad máxima 8 en _validate_input y 2 en calculate_shipping_
 
 ### 7.1 Línea base y flujo de trabajo
 
-El repositorio conserva la línea base heredada con la etiqueta v1.0.0. La suite de caja negra está en la rama test/suite y su incorporación a main quedó registrada en el historial. Para continuar, cada defecto se abordará en una rama propia fix/DEF-01 a fix/DEF-06; la refactorización se trabajará en refactor/estrategia. Cada rama contendrá un cambio revisable y sus pruebas relacionadas, y se integrará en main después de comprobar el resultado.
+El repositorio conserva la línea base heredada con la etiqueta v1.0.0. La suite de caja negra está en la rama test/suite y su incorporación a main quedó registrada en el historial. Los seis defectos se abordaron en ramas propias `fix/DEF-01` a `fix/DEF-06`; la refactorización se trabajó en `refactor/estrategia`. Cada rama contiene un cambio revisable y sus pruebas relacionadas, y se integró en `main` tras comprobar el resultado.
 
 | Elemento | Estado registrado |
 |---|---|
@@ -482,7 +482,7 @@ El repositorio conserva la línea base heredada con la etiqueta v1.0.0. La suite
 
 ### 7.2 Criterio de versionado semántico
 
-Se parte de v1.0.0. Una corrección compatible con la interfaz se versionaría como PATCH. Una funcionalidad compatible añadida se versionaría como MINOR. Se eliminó flag junto con la interfaz heredada calc y se sustituyó por calculate_shipping_cost; al ser un cambio incompatible, corresponde el incremento MAJOR a v2.0.0. La etiqueta se publicará tras validar la integración.
+Se parte de `v1.0.0`. Una corrección compatible con la interfaz se versionaría como PATCH y una funcionalidad compatible añadida como MINOR. Se eliminó `flag` junto con la interfaz heredada `calc` y se sustituyó por `calculate_shipping_cost`; al ser un cambio incompatible, corresponde el incremento MAJOR a `v2.0.0`. La etiqueta `v2.0.0` se creó sobre el commit `66ccd05`, después de validar la integración.
 
 ### 7.3 Registro de cambios
 
@@ -490,7 +490,7 @@ El repositorio incluye CHANGELOG.md como artefacto de versionado; el informe de 
 
 ### 7.4 Historial verificable
 
-El historial de Git se utilizará para mostrar el orden real de los avances y las integraciones. La evidencia de git log --oneline --decorate --graph y de las ramas/etiquetas se incorporará a evidencias/ por la estudiante cuando recopile las capturas solicitadas. No se alterarán fechas ni se crearán commits retroactivos para aparentar una secuencia.
+La salida de `git log --oneline --graph --all --decorate`, dividida en dos capturas por su extensión, muestra las ramas, integraciones, etiquetas y commits reales. Las figuras 7.1 y 7.2 documentan el historial; la figura 7.4 muestra las etiquetas. Se conservan las fechas registradas por Git.
 
 ### Evidencias de configuración y versiones
 
@@ -502,17 +502,17 @@ El historial de Git se utilizará para mostrar el orden real de los avances y la
 
 *Figura 7.2. Continuación del historial hasta la línea base v1.0.0.*
 
-![Etiquetas publicadas](evidencias/07-02-historial-etiquetas.png)
-
-*Figura 7.3. Etiquetas v1.0.0 y v2.0.0 registradas en Git.*
-
 ![Changelog de la versión](evidencias/07-02-changelog-v2.0.0.png)
 
-*Figura 7.4. CHANGELOG.md con el cambio de zona insular, las correcciones y la versión 2.0.0.*
+*Figura 7.3. CHANGELOG.md con el cambio de zona insular, las correcciones y la versión 2.0.0.*
+
+![Etiquetas publicadas](evidencias/07-02-historial-etiquetas.png)
+
+*Figura 7.4. Etiquetas v1.0.0 y v2.0.0 registradas en Git.*
 
 ## Parte 8. Análisis de impacto: nueva zona insular
 
-> **Estado:** R9 quedó implementada y sus cinco casos de aceptación pasaron; la suite total aprobó 37/37. Las capturas de ejecución se agregarán posteriormente por la estudiante.
+> **Estado:** R9 quedó implementada y sus cinco casos de aceptación pasaron; la suite total aprobó 37/37. La evidencia de aceptación está incluida al final de esta parte.
 
 ### 8.1 Regla nueva y parámetro individual
 
@@ -527,7 +527,7 @@ Para el identificador 0182410068, los dígitos de parametrización son A=4, B=1,
 | Cálculo de tarifa | Suma 70 % a la tarifa aplicable. | RECARGO_INSULAR = 0.70 en la política de zona. |
 | Descuentos | El cupón no aplica a envíos insulares. | La política ignora el cupón para esa zona y conserva los descuentos de cliente. |
 | Pruebas | Se ampliaron particiones y tabla de decisión para la nueva zona. | Los cinco casos de aceptación R9 y la regresión completa pasaron. |
-| Versionado y documentación | Cambió el alcance funcional y la interfaz pública. | CHANGELOG.md registra el cambio; se asignará v2.0.0 por el cambio incompatible. |
+| Versionado y documentación | Cambió el alcance funcional y la interfaz pública. | `CHANGELOG.md` registra el cambio; se publicó `v2.0.0` por el cambio incompatible. |
 
 ### 8.3 Casos nuevos previstos
 
@@ -547,12 +547,12 @@ Los importes de IN-01 a IN-03 se calcularon aplicando R3, R4/R9, R5 y R6 en el o
 2. Se añadieron primero los cinco casos IN-01 a IN-05; antes del cambio, las pruebas reprodujeron las fallas de zona y cupón.
 3. Se implementó el recargo insular del 70 % y se excluyó el cupón promocional en esa zona; los cinco casos pasaron.
 4. La suite de regresión completa aprobó 37/37 pruebas, con 100 % de cobertura de sentencias y ramas.
-5. Se actualizó CHANGELOG.md; la etiqueta final se creará después de integrar y validar main.
-6. Las capturas de ejecución, cobertura e historial siguen pendientes y las agregará la estudiante en evidencias/.
+5. Se actualizó `CHANGELOG.md`; `v2.0.0` se publicó sobre el commit `66ccd05` después de integrar y validar `main`.
+6. Las capturas de ejecución, cobertura, historial, etiquetas y changelog se adjuntan al informe y están guardadas en `evidencias/`.
 
 ### 8.5 Resultado de aceptación
 
-IN-01 a IN-05 pasaron en la rama de funcionalidad antes de integrarla. La suite completa posterior a la refactorización también pasó: 37 pruebas aprobadas, cobertura de sentencias 61/61 y cobertura de ramas 14/14. La salida visual para evidencias aún debe capturarse en el equipo de la estudiante.
+IN-01 a IN-05 pasaron en la rama de funcionalidad antes de integrarla. La suite completa posterior a la refactorización también pasó: 37 pruebas aprobadas, cobertura de sentencias 61/61 y cobertura de ramas 14/14. La figura 8.1 conserva la salida de aceptación de los cinco casos insulares.
 
 ### Evidencia de aceptación de R9
 
