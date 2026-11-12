@@ -453,7 +453,7 @@ Radon midió complejidad máxima 8 en _validate_input y 2 en calculate_shipping_
 
 ## Parte 7. Gestión de versiones y cambios
 
-> **Estado:** las ramas de pruebas y correcciones se crearon y fusionaron; la refactorización quedó en su rama. El changelog y el etiquetado final se actualizarán tras integrar y validar main.
+> **Estado:** las ramas de pruebas y correcciones se crearon y fusionaron; la refactorización quedó en su rama. CHANGELOG.md registra el lanzamiento y la etiqueta v2.0.0 está publicada sobre el commit validado.
 
 ### 7.1 Línea base y flujo de trabajo
 
@@ -467,7 +467,7 @@ El repositorio conserva la línea base heredada con la etiqueta v1.0.0. La suite
 | Rama test/part8-insular | Casos R9 creados primero y fusionados en main. |
 | Rama feature/part8-insular | Funcionalidad implementada, cinco casos aprobados y fusionada en main. |
 | Rama refactor/estrategia | Creada, probada y fusionada en main. |
-| Etiqueta posterior | v2.0.0 por el cambio incompatible de la interfaz pública; se publicará al cerrar la integración validada. |
+| Etiqueta posterior | v2.0.0, publicada sobre el commit 66ccd05 tras la validación en main. |
 
 ### 7.2 Criterio de versionado semántico
 
