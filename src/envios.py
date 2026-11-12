@@ -11,6 +11,8 @@ CONFIG = {
 def calc(p, z, c, d, cup=None, flag=False):
     if p <= 0 or p > 50:
         raise ValueError("peso inv\u00e1lido")
+    if type(d) is not int or not 1 <= d <= 7:
+        raise ValueError("dia invalido")
     if z not in ("urbana", "rural", "nacional"):
         raise ValueError("zona inv\u00e1lida")
     if p <= CONFIG["L1"]:
