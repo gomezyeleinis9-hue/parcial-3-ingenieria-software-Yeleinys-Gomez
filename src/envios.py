@@ -1,4 +1,5 @@
 # envios.py - c?digo heredado, versi?n 1.0.0
+import math
 from decimal import Decimal, ROUND_HALF_UP
 
 CONFIG = {
@@ -11,7 +12,7 @@ CONFIG = {
 }
 
 def calc(p, z, c, d, cup=None, flag=False):
-    if p <= 0 or p > 50:
+    if isinstance(p, bool) or not isinstance(p, (int, float)) or not math.isfinite(p) or p <= 0 or p > 50:
         raise ValueError("peso inv\u00e1lido")
     if type(d) is not int or not 1 <= d <= 7:
         raise ValueError("dia invalido")
