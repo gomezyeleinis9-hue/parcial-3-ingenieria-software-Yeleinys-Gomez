@@ -386,3 +386,115 @@ La cobertura indica que se recorrieron las sentencias y ramas medidas; las 17 fa
 - R2: DEF-02 y DEF-03, reproducidos con BB-13, BB-14, BB-28 y BB-30.
 - R5: DEF-04, reproducido con BB-15; BB-16 confirma que el domingo sí recibe recargo.
 - R8: DEF-05, reproducido con BB-10, BB-20, BB-21, BB-23, BB-24, BB-25, BB-31 y BB-32.
+
+## Parte 6. Refactorización y mantenimiento
+
+> **Estado de esta sección:** análisis y diseño documentados. La refactorización, las pruebas de regresión, la medición posterior y sus capturas quedan pendientes de ejecución; se completarán con los resultados reales.
+
+### 6.1 Identificación de code smells
+
+| Líneas de src/envios.py en v1.0.0 | Code smell observado | Efecto en el mantenimiento | Tipo relacionado |
+|---|---|---|---|
+| 11–40 | La función calc concentra validación, tarifa, zona, recargos, descuentos, piso, redondeo e impresión. | Un cambio en una regla obliga a revisar una función con varias responsabilidades. | Perfectivo; los defectos encontrados también requieren mantenimiento correctivo. |
+| 11 | Nombre genérico calc y parámetros abreviados p, z, c, d. | La intención de cada dato no se entiende sin rastrear todo el cuerpo de la función. | Perfectivo. |
+| 11, 38–39 | Parámetro flag controla una impresión desde la función que calcula el envío. | Mezcla cálculo y salida por consola; complica el uso de la función y las pruebas. | Perfectivo. |
+| 15, 17, 19, 29–40 | Números mágicos para tarifas, descuentos, mínimos y redondeo. | La misma regla puede quedar expresada de forma inconsistente en distintos lugares. | Perfectivo y preventivo. |
+| 20–21 | Rama urbana redundante: t = t. | Agrega una ruta que no cambia el resultado y hace más difícil leer la lógica de zonas. | Perfectivo. |
+| 20–25 | Condicionales encadenados para cada zona dentro de calc. | Añadir o cambiar una zona aumenta el acoplamiento de la función central. | Perfectivo; el cambio insular de la Parte 8 es adaptativo. |
+| 33 | Comparación cup != None. | La comprobación es menos clara que la forma idiomática cup is not None. | Perfectivo. |
+
+### 6.2 Clasificación del mantenimiento
+
+- **Correctivo:** corregir DEF-01 a DEF-06 de la Parte 5 para que la validación, los recargos de fin de semana y el redondeo cumplan R1–R8.
+- **Perfectivo:** separar responsabilidades, reemplazar nombres poco expresivos, centralizar constantes y eliminar flag y la impresión lateral.
+- **Preventivo:** conservar pruebas de regresión para cada regla y dejar decisiones de tarifa aisladas para reducir el riesgo de defectos al mantener el sistema.
+- **Adaptativo:** incorporar la nueva zona insular y su recargo de 70 % en la Parte 8.
+
+### 6.3 Diseño propuesto de refactorización
+
+La función de cotización quedará como coordinadora de pasos pequeños: validar entrada, calcular tarifa base, obtener el recargo de zona, aplicar fin de semana y descuentos en el orden especificado, aplicar mínimo y redondeo. Las tarifas y porcentajes pasarán a constantes con nombres explicativos. La lógica de zona se aislará detrás de una estrategia o tabla de políticas para permitir añadir la zona insular sin extender una cadena de condicionales.
+
+Se eliminará flag y la impresión de diagnóstico: la cotización será una función sin efectos laterales. Los errores de validación seguirán respetando los mensajes definidos en R1 y R2. La implementación se hará en cambios pequeños y cada cambio deberá conservar o corregir el comportamiento mediante la suite de regresión.
+
+Diseño UML propuesto: CotizadorEnvios depende de una interfaz PoliticaZona, implementada por ZonaUrbana, ZonaRural, ZonaNacional y ZonaInsular. El cotizador valida la entrada, calcula la tarifa base, solicita la política de zona y aplica descuentos y redondeo.
+
+### 6.4 Comparación antes y después
+
+| Indicador | Antes: v1.0.0 medido | Después de refactorizar |
+|---|---:|---:|
+| Líneas físicas de src/envios.py | 40 | Pendiente de medir |
+| Complejidad ciclomática de la función heredada | 15 según el grafo de la Parte 4 | Pendiente de medir por función y total |
+| Cobertura de sentencias | 100 % (29/29), con 17 fallas funcionales | Pendiente de ejecutar regresión |
+| Cobertura de ramas | 100 % (26/26), con 17 fallas funcionales | Pendiente de ejecutar regresión |
+| Pruebas aprobadas | 16/33 | Pendiente de ejecutar regresión |
+| Pruebas fallidas | 17/33 | Pendiente; se espera cero fallas para R1–R8 |
+
+La cobertura alta del legado no significa que su comportamiento sea correcto: la primera ejecución detectó seis defectos. Las columnas posteriores se completarán después de implementar y medir la refactorización; no se estiman valores.
+
+## Parte 7. Gestión de versiones y cambios
+
+> **Estado de esta sección:** se documentan la línea base y la estrategia. Las ramas de corrección, la refactorización, el changelog final y la versión posterior se registrarán al ejecutarlos; no se presentan como realizados.
+
+### 7.1 Línea base y flujo de trabajo
+
+El repositorio conserva la línea base heredada con la etiqueta v1.0.0. La suite de caja negra está en la rama test/suite y su incorporación a main quedó registrada en el historial. Para continuar, cada defecto se abordará en una rama propia fix/DEF-01 a fix/DEF-06; la refactorización se trabajará en refactor/estrategia. Cada rama contendrá un cambio revisable y sus pruebas relacionadas, y se integrará en main después de comprobar el resultado.
+
+| Elemento | Estado registrado |
+|---|---|
+| Etiqueta base v1.0.0 | Creada para el cálculo heredado. |
+| Rama test/suite | Creada y fusionada en main. |
+| Ramas fix/DEF-01 a fix/DEF-06 | Pendientes de crear al corregir cada defecto. |
+| Rama refactor/estrategia | Pendiente de crear para el cambio estructural. |
+| Etiqueta posterior | Se decidirá después de revisar el alcance y validar las pruebas. |
+
+### 7.2 Criterio de versionado semántico
+
+Se parte de v1.0.0. Una corrección compatible con la interfaz se versionaría como PATCH. Una funcionalidad compatible añadida se versionaría como MINOR. Si se elimina flag de una interfaz pública que consumidores ya usan, el cambio rompe compatibilidad y requiere MAJOR; por ello la decisión entre v1.1.0 y v2.0.0 se confirmará al revisar si esa interfaz forma parte del contrato entregado. No se asigna una etiqueta nueva antes de integrar y validar el cambio.
+
+### 7.3 Registro de cambios
+
+Se mantendrá un CHANGELOG.md separado como artefacto de versionado del repositorio; el informe de las Partes 1–8 continúa en este único INFORME.md. El changelog seguirá secciones Unreleased y una sección por versión, con categorías Added, Changed, Fixed y Removed. Cada entrada se agregará cuando el cambio correspondiente exista y se haya verificado.
+
+### 7.4 Historial verificable
+
+El historial de Git se utilizará para mostrar el orden real de los avances y las integraciones. La evidencia de git log --oneline --decorate --graph y de las ramas/etiquetas se incorporará a evidencias/ por la estudiante cuando recopile las capturas solicitadas. No se alterarán fechas ni se crearán commits retroactivos para aparentar una secuencia.
+
+## Parte 8. Análisis de impacto: nueva zona insular
+
+> **Estado de esta sección:** requisito derivado de los parámetros individuales; implementación y pruebas quedan pendientes. La evidencia se agregará después de ejecutarlas.
+
+### 8.1 Regla nueva y parámetro individual
+
+Para el identificador 0182410068, los dígitos de parametrización son A=4, B=1, C=0, D=0, E=6 y F=8. Por tanto, CAMBIO = (A + F) mod 3 = (4 + 8) mod 3 = 0. El valor 0 corresponde a habilitar la zona **insular (San Andrés)** con recargo del **70 %**. La regla se añade al contrato como **R9**: la zona insular es válida y suma 70 % a la tarifa que resulte aplicable; para esta zona no se aplica cupón promocional. Se conserva el resto del orden de R1–R8, incluido el recargo de fin de semana antes de descuentos y el redondeo al final.
+
+### 8.2 Análisis de impacto
+
+| Componente | Impacto previsto | Acción |
+|---|---|---|
+| Requisitos y trazabilidad | Se amplía R2 con la zona insular y se agrega R9. | Añadir filas de cobertura para zona insular y regla de cupón. |
+| Validación de zonas | insular deja de ser entrada inválida. | Aceptarla explícitamente y seguir rechazando zonas desconocidas. |
+| Cálculo de tarifa | Debe sumar 70 % a la tarifa aplicable. | Incorporar RECARGO_INSULAR = 0.70 en la política de zona. |
+| Descuentos | El cupón no aplica a envíos insulares. | Evitar descuento de cupón en esa zona; conservar las reglas de cliente que no contradigan R9. |
+| Pruebas | Cambian particiones y tabla de decisión para la nueva zona. | Escribir primero pruebas de aceptación de R9 y regresión de R1–R8. |
+| Versionado y documentación | Cambia el alcance funcional del producto. | Actualizar CHANGELOG.md y escoger MINOR o MAJOR según compatibilidad de interfaz. |
+
+### 8.3 Casos nuevos previstos
+
+| Caso | Entrada | Resultado esperado |
+|---|---|---|
+| IN-01 | 10 kg, insular, cliente normal, día 1, sin cupón | $15.300: $9.000 + 70 %. |
+| IN-02 | 10 kg, insular, cliente normal, día 6, sin cupón | $17.300: tarifa con 70 % y luego recargo de sábado de $2.000. |
+| IN-03 | 10 kg, insular, cliente normal, día 1, cupón ENVIO10 | $15.300: R9 excluye el descuento de cupón en esta zona. |
+| IN-04 | 51 kg, insular, cliente normal, día 1, sin cupón | ValueError("peso inválido"); R1 sigue teniendo prioridad. |
+| IN-05 | 10 kg, zona exterior, cliente normal, día 1, sin cupón | Error de zona; añadir una zona válida no debe aceptar zonas desconocidas. |
+
+Los importes de IN-01 a IN-03 se calcularon aplicando R3, R4/R9, R5 y R6 en el orden definido. La ejecución automatizada y la confirmación de estos resultados quedan pendientes para la etapa de pruebas.
+
+### 8.4 Estrategia de implementación y aceptación
+
+1. Crear una rama de funcionalidad desde main.
+2. Añadir primero las pruebas IN-01 a IN-05 y comprobar que IN-01 a IN-03 fallen antes de implementar R9, mientras IN-04 e IN-05 conservan sus validaciones.
+3. Implementar la política insular del 70 % y la exclusión de cupón para esa zona.
+4. Ejecutar la suite completa de regresión de R1–R9 y revisar cobertura.
+5. Actualizar trazabilidad, tabla de decisión y CHANGELOG.md; integrar el cambio y etiquetar la versión solo después de verificarlo.
+6. Guardar las capturas de ejecución, cobertura, historial y cambios en evidencias/. Esta carpeta queda a cargo de la estudiante para su recopilación paso a paso.
