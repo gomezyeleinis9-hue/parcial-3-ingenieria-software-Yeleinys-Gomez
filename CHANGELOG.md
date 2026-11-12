@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+- Added requirements.txt to reproduce the pytest and pytest-cov environment.
+
 ## [2.0.0] - 2026-11-11
 
 ### Added
