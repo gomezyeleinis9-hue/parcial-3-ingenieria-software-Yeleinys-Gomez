@@ -244,7 +244,7 @@ Entradas en orden: peso en kg, zona, cliente, día y cupón. Los decimales de es
 
 ## Parte 4. Diseño de casos de caja blanca
 
-Esta sección analiza `calc` del código heredado que entrega el parcial, antes de corregirlo. La etiqueta `v1.0.0` y el archivo de código se incorporarán al repositorio en la parte de automatización/configuración; aquí se modela su flujo original con los parámetros personalizados.
+Esta sección analiza `calc` del código heredado que entrega el parcial, antes de corregirlo. El código original está guardado en `src/envios.py` y etiquetado `v1.0.0`; aquí se modela su flujo antes de cualquier corrección.
 
 ### 4.1 Grafo de flujo
 
@@ -338,3 +338,4 @@ Estas son coberturas diseñadas. La medición real con pytest-cov y sus evidenci
 ### 4.5 Caso WB-01 del argumento `flag`
 
 Entrada heredada: `calc(10, "urbana", "normal", 1, None, flag=True)`. El valor de retorno esperado por R1–R8 es $9.000. En `v1.0.0`, además, se imprime `costo: 9000`; esta salida permite ejecutar la rama verdadera de `flag`. La refactorización eliminará el argumento y esa impresión, como solicita la Parte 6.
+
