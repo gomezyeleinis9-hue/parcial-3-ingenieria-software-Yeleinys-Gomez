@@ -11,16 +11,11 @@
 
 Los seis últimos dígitos de `0182410068` son `410068`; en orden: **A=4, B=1, C=0, D=0, E=6, F=8**.
 
-| Parámetro | Cálculo propio | Valor |
-|---|---|---:|
-| PMAX | 30 + 5 × A = 30 + 5 × 4 | 50 kg |
-| L1 | 2 + (B mod 3) = 2 + (1 mod 3) | 3 kg |
-| L2 | 10 + C = 10 + 0 | 10 kg |
-| RR | 10 + 5 × (E mod 4) = 10 + 5 × 2 | 20 % |
-| RN | 40 + 5 × (F mod 3) = 40 + 5 × 2 | 50 % |
-| V | 10 + 5 × (A mod 3) = 10 + 5 × 1 | 15 % |
-| S | 2.000 + 500 × (C mod 4) = 2.000 + 0 | $2.000 |
-| CAMBIO | (A + F) mod 3 = (4 + 8) mod 3 | 0 |
+| A | B | C | D | E | F | PMAX | L1 | L2 | RR | RN | V | S | CAMBIO |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 4 | 1 | 0 | 0 | 6 | 8 | 50 kg | 3 kg | 10 kg | 20 % | 50 % | 15 % | $2.000 | 0 |
+
+**Cálculo de los parámetros:** PMAX = 30 + 5 × 4 = 50; L1 = 2 + (1 mod 3) = 3; L2 = 10 + 0 = 10; RR = 10 + 5 × (6 mod 4) = 20 %; RN = 40 + 5 × (8 mod 3) = 50 %; V = 10 + 5 × (4 mod 3) = 15 %; S = 2.000 + 500 × (0 mod 4) = $2.000; CAMBIO = (4 + 8) mod 3 = 0.
 
 **Reglas de paridad:** D=0 es par, así que el tramo 1 incluye `peso = 3 kg`; E=6 es par, así que el recargo de fin de semana se suma antes de los descuentos; B=1 es impar, así que se aplican los descuentos de cliente y cupón de manera secuencial, primero cliente y luego cupón; F=8 es par, así que un cupón desconocido se ignora.
 
@@ -388,6 +383,12 @@ La cobertura indica que se recorrieron las sentencias y ramas medidas; las 17 fa
 - R5: DEF-04, reproducido con BB-15; BB-16 confirma que el domingo sí recibe recargo.
 - R8: DEF-05, reproducido con BB-10, BB-20, BB-21, BB-23, BB-24, BB-25, BB-31 y BB-32.
 
+### Evidencias de ejecución del código heredado
+
+![Ejecución de pruebas del legado con fallas y cobertura](evidencias/01-v1.0.0-pruebas-fallidas.png)
+
+*Figura 5.1. Las pruebas del código heredado registran 17 fallas y 16 aprobaciones; la cobertura reporta 29 sentencias y 26 ramas.*
+
 ## Parte 6. Refactorización y mantenimiento
 
 > **Estado:** refactorización implementada en refactor/estrategia; la suite completa aprobó 37/37 casos. Las capturas siguen pendientes para que las agregue la estudiante.
@@ -451,6 +452,16 @@ La cobertura alta del legado no garantizaba resultados correctos: la ejecución 
 
 Radon midió complejidad máxima 8 en _validate_input y 2 en calculate_shipping_cost. La complejidad quedó distribuida entre funciones pequeñas; se redujo el máximo por función de 15 a 8. DEF-01 a DEF-06 quedaron corregidos y la cobertura de ramas final fue 14/14.
 
+### Evidencias de regresión y refactorización
+
+![Suite final aprobada y cobertura](evidencias/06-01-regresion-y-cobertura-final.png)
+
+*Figura 6.1. La regresión final aprueba 37 pruebas, con 61 sentencias y 14 ramas cubiertas.*
+
+![Complejidad ciclomática antes y después](evidencias/06-02-complejidad-antes-despues.png)
+
+*Figura 6.2. Radon muestra la complejidad de calc en v1.0.0 y la complejidad distribuida entre las funciones refactorizadas.*
+
 ## Parte 7. Gestión de versiones y cambios
 
 > **Estado:** las ramas de pruebas, correcciones y refactorización se crearon y fusionaron en main. CHANGELOG.md registra el lanzamiento y la etiqueta v2.0.0 está publicada sobre el commit validado.
@@ -480,6 +491,24 @@ El repositorio incluye CHANGELOG.md como artefacto de versionado; el informe de 
 ### 7.4 Historial verificable
 
 El historial de Git se utilizará para mostrar el orden real de los avances y las integraciones. La evidencia de git log --oneline --decorate --graph y de las ramas/etiquetas se incorporará a evidencias/ por la estudiante cuando recopile las capturas solicitadas. No se alterarán fechas ni se crearán commits retroactivos para aparentar una secuencia.
+
+### Evidencias de configuración y versiones
+
+![Historial Git, primera parte](evidencias/07-01-historial-etiquetas.png)
+
+*Figura 7.1. Historial gráfico de ramas, correcciones y merges de Git.*
+
+![Continuación del historial Git](evidencias/07-01.1historial-etiquetas.png)
+
+*Figura 7.2. Continuación del historial hasta la línea base v1.0.0.*
+
+![Etiquetas publicadas](evidencias/07-02-historial-etiquetas.png)
+
+*Figura 7.3. Etiquetas v1.0.0 y v2.0.0 registradas en Git.*
+
+![Changelog de la versión](evidencias/07-02-changelog-v2.0.0.png)
+
+*Figura 7.4. CHANGELOG.md con el cambio de zona insular, las correcciones y la versión 2.0.0.*
 
 ## Parte 8. Análisis de impacto: nueva zona insular
 
@@ -524,3 +553,9 @@ Los importes de IN-01 a IN-03 se calcularon aplicando R3, R4/R9, R5 y R6 en el o
 ### 8.5 Resultado de aceptación
 
 IN-01 a IN-05 pasaron en la rama de funcionalidad antes de integrarla. La suite completa posterior a la refactorización también pasó: 37 pruebas aprobadas, cobertura de sentencias 61/61 y cobertura de ramas 14/14. La salida visual para evidencias aún debe capturarse en el equipo de la estudiante.
+
+### Evidencia de aceptación de R9
+
+![Pruebas de la zona insular](evidencias/01-pruebas-zona-insular.png)
+
+*Figura 8.1. Los cinco casos de aceptación de la zona insular pasan.*
