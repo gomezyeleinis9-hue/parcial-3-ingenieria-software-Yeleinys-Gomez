@@ -453,7 +453,7 @@ Radon midió complejidad máxima 8 en _validate_input y 2 en calculate_shipping_
 
 ## Parte 7. Gestión de versiones y cambios
 
-> **Estado:** las ramas de pruebas y correcciones se crearon y fusionaron; la refactorización quedó en su rama. CHANGELOG.md registra el lanzamiento y la etiqueta v2.0.0 está publicada sobre el commit validado.
+> **Estado:** las ramas de pruebas, correcciones y refactorización se crearon y fusionaron en main. CHANGELOG.md registra el lanzamiento y la etiqueta v2.0.0 está publicada sobre el commit validado.
 
 ### 7.1 Línea base y flujo de trabajo
 
