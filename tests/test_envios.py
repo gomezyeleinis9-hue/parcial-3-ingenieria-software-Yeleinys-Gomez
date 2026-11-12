@@ -59,3 +59,24 @@ def test_camino_wb_01_flag_heredado(capsys):
     resultado = calc(10, "urbana", "normal", 1, None, True)
     assert resultado == 9000
     assert capsys.readouterr().out == "costo: 9000\n"
+
+INSULAR_CASES = [
+    pytest.param((10, "insular", "normal", 1, None), 15300, id="IN-01"),
+    pytest.param((10, "insular", "normal", 6, None), 17300, id="IN-02"),
+    pytest.param((10, "insular", "normal", 1, "ENVIO10"), 15300, id="IN-03"),
+    pytest.param((51, "insular", "normal", 1, None), ("ValueError", "peso inv" + chr(0xE1) + "lido"), id="IN-04"),
+    pytest.param((10, "exterior", "normal", 1, None), ("ValueError", None), id="IN-05"),
+]
+
+
+@pytest.mark.parametrize("args, expected", INSULAR_CASES)
+def test_regla_r9_zona_insular(args, expected):
+    if isinstance(expected, tuple) and expected[0] == "ValueError":
+        if expected[1] is None:
+            with pytest.raises(ValueError):
+                calc(*args)
+        else:
+            with pytest.raises(ValueError, match=re.escape(expected[1])):
+                calc(*args)
+    else:
+        assert calc(*args) == expected
