@@ -1,4 +1,6 @@
-# Parte 1. Requisitos y criterios de aceptación
+# Informe del Parcial 3 - Ingeniería de Software
+
+## Parte 1. Requisitos y criterios de aceptación
 
 **Estudiante:** Yeleinys Gomez  
 **Código estudiantil:** 0182410068  
@@ -84,3 +86,4 @@ Los IDs de casos se incorporarán al diseñar la caja negra en la Parte 3.
 | R6 — Descuentos | HU-03 | Pendiente de Parte 3 |
 | R7 — Cupón desconocido | HU-03 | Pendiente de Parte 3 |
 | R8 — Piso y redondeo | HU-03 | Pendiente de Parte 3 |
+
