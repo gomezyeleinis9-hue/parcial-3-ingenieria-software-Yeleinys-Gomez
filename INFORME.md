@@ -87,3 +87,46 @@ Los IDs de casos se incorporarán al diseñar la caja negra en la Parte 3.
 | R7 — Cupón desconocido | HU-03 | Pendiente de Parte 3 |
 | R8 — Piso y redondeo | HU-03 | Pendiente de Parte 3 |
 
+
+## Parte 2. Plan de pruebas
+
+### 2.1 Alcance
+
+El plan cubre el cálculo de costos de EnvíaYa definido en R1–R8: validación de peso, zona y día; tramos de tarifa; recargos rural y nacional; recargo de sábado y domingo; descuentos de cliente y cupón; tratamiento de cupón desconocido; piso de $5.000 y redondeo a $100. La solicitud asignada de zona insular (R9) se incorporará al plan de regresión cuando se analice e implemente en la Parte 8.
+
+Se probará el módulo de cálculo desde su función pública, primero con el código heredado y después de corregir/refactorizarlo. No se incluyen interfaz gráfica, persistencia, pagos, integraciones con transportadoras ni rendimiento de un sistema de producción.
+
+### 2.2 Niveles de prueba
+
+| Nivel | Aplicación al caso EnvíaYa |
+|---|---|
+| **Unidad** | Verificar cada decisión del cálculo: validación de peso, elección de tramo, recargo por zona, calendario, descuentos, piso y redondeo. Cada prueba usa entradas controladas y un resultado esperado calculado de forma independiente. |
+| **Integración** | Verificar el orden al combinar las reglas: tarifa base → zona → fin de semana → cliente → cupón → mínimo → redondeo. Para R9 se comprobará que la estrategia insular aplique 70 % y rechace todo cupón. |
+| **Sistema** | Ejecutar la función completa con solicitudes válidas e inválidas y comprobar el precio final o la excepción observada desde la interfaz pública. Repetir sobre la línea base y la versión corregida. |
+| **Aceptación** | Recorrer los criterios Dado/Cuando/Entonces de HU-01 a HU-03, vincular cada resultado con su caso y verificar que los valores coincidan con esta especificación personalizada. En la Parte 8 se añaden criterios de aceptación para R9. |
+
+### 2.3 Estrategia, ambiente y roles
+
+**Estrategia.** Derivar casos de particiones de equivalencia, valores límite y tabla de decisión; diseñar caminos independientes para caja blanca; calcular a mano al menos cinco resultados; escribir primero las pruebas de la solicitud de cambio; ejecutar la regresión después de cada corrección. Medir cobertura de sentencias y ramas y conservar la salida real. Una cobertura alta no se considerará prueba suficiente de corrección.
+
+**Ambiente.** Windows y Python 3.12.14 en el entorno de trabajo observado. La suite se ejecutará con pytest y pytest-cov, administrados con uv. Al dejar el comando definitivo en el informe se anotarán las versiones exactas de pytest y pytest-cov, el commit evaluado y la fecha de ejecución. Git conservará la línea base y las ramas de trabajo.
+
+**Roles.** La estudiante actúa como analista de requisitos, diseñadora y ejecutora de pruebas, y responsable del mantenimiento del código. El docente evalúa el informe y dirige la sustentación dinámica indicada en el parcial.
+
+### 2.4 Riesgos y mitigaciones
+
+| Riesgo | Efecto | Mitigación |
+|---|---|---|
+| Usar parámetros o reglas de otro estudiante como propios. | Resultados esperados, CONFIG e informe no corresponderían al código estudiantil. | Recalcular las fórmulas con `410068`, verificar las paridades y usar ejemplos y casos propios. |
+| Interpretar mal el orden de recargos y descuentos. | Precio incorrecto aunque los porcentajes sean correctos. | Escribir el orden en R5–R6, incluir combinaciones en la tabla de decisión y mostrar los subtotales en cálculos manuales. |
+| Omitir límites o empates de redondeo. | Defectos en transiciones de tramo o en valores monetarios cercanos a la centena. | Probar valores inmediatamente debajo, en y encima de 0, L1, L2 y PMAX; probar un empate de $50. |
+| Registrar como defecto una diferencia causada por un oráculo incorrecto. | Correcciones innecesarias o falsas fallas. | Calcular los esperados a mano desde R1–R8 y revisar cada operación antes de ejecutar la prueba. |
+| Perder evidencia o no poder reproducir la ejecución. | Métricas y reporte no verificables. | Guardar salida de pytest, cobertura y capturas en `evidencias/`; anotar comando, versión y commit. |
+| Introducir regresiones durante la refactorización o R9. | Una corrección rompe reglas que ya funcionaban. | Mantener la misma matriz de casos, ejecutarla tras cada cambio y añadir primero los casos de R9. |
+| Concentrar el historial en un único commit al final. | El proceso de avance solicitado por el docente no sería visible. | Registrar cada archivo o avance real en un commit separado y publicar esos commits en el remoto al terminar cada parte. |
+
+### 2.5 Criterios de entrada y salida
+
+**Entrada:** R1–R8 y sus parámetros revisados; R9 identificada como cambio asignado; función heredada disponible sin correcciones; casos con entradas y resultados esperados definidos; herramientas y repositorio identificados.
+
+**Salida:** casos diseñados y trazados; resultados de ejecución conservados; defectos reproducibles documentados con severidad y prioridad; regresión de la versión corregida aprobada; cobertura de sentencias y ramas reportada; informe, CHANGELOG, etiquetas y evidencias coherentes con el repositorio entregado.
