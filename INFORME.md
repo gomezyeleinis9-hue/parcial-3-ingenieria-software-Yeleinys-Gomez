@@ -154,9 +154,9 @@ Como D=0 es par, el límite de L1=3 kg pertenece al tramo 1.
 | 0 kg | -0,01 kg: BB-01, inválido | 0 kg: BB-02, inválido | 0,01 kg: BB-03, $6.000 |
 | L1 = 3 kg | 2,99 kg: BB-04, $6.000 | 3 kg: BB-05, $6.000 | 3,01 kg: BB-06, $9.000 |
 | L2 = 10 kg | 9,99 kg: BB-07, $9.000 | 10 kg: BB-08, $9.000 | 10,01 kg: BB-09, base $9.008 y total $9.000 tras redondear |
-| PMAX = 50 kg | 49,99 kg: BB-18? No; se reserva BB-11 para el límite superior | 50 kg: BB-11, $41.000 | 50,01 kg: BB-12, inválido |
+| PMAX = 50 kg | 49,99 kg: BB-32, $41.000 | 50 kg: BB-11, $41.000 | 50,01 kg: BB-12, inválido |
 
-El límite inferior de PMAX se cubre con BB-27 (`10,5 kg`, tramo 3) y se puede ampliar a `49,99 kg` en ejecución si se requiere el valor inmediatamente inferior a 50 kg. Para un empate exacto de redondeo se usa BB-10: `10,0625 kg` produce $9.050 antes de redondear.
+El valor inmediatamente inferior a PMAX se cubre con BB-32 (`49,99 kg`). Para un empate exacto de redondeo se usa BB-10: `10,0625 kg` produce $9.050 antes de redondear.
 
 ### 3.3 Tabla de decisión: cliente × cupón × fin de semana
 
@@ -210,7 +210,8 @@ Entradas en orden: peso en kg, zona, cliente, día y cupón. `—` significa cup
 | BB-28 | R2 | `(10, urbana, normal, 8, —)` | Error por día inválido | Límite superior del día |
 | BB-29 | R1 | `("no-numérico", urbana, normal, 1, —)` | Error de peso | Partición inválida de tipo |
 | BB-30 | R2 | `(10, urbana, normal, 6,5, —)` | Error por día no entero | Partición inválida de tipo |
-| BB-31 | R3–R8 | `(9,5, nacional, frecuente, 7, ENVIO10)` | $13.300 | Decisión combinada con peso decimal |
+| BB-31 | R3–R6, R8 | `(9,5, nacional, frecuente, 7, ENVIO10)` | $13.300 | Decisión combinada con peso decimal |
+| BB-32 | R1, R3 | (49,99, urbana, normal, 1, —) | .000 | Límite inferior de PMAX |
 
 ### 3.5 Cálculos manuales de resultados esperados
 
@@ -230,11 +231,12 @@ Entradas en orden: peso en kg, zona, cliente, día y cupón. `—` significa cup
 
 | Requisito | Historia | Casos de prueba |
 |---|---|---|
-| R1 — Peso | HU-01 | BB-01, BB-02, BB-03, BB-11, BB-12, BB-29 |
+| R1 — Peso | HU-01 | BB-01, BB-02, BB-03, BB-11, BB-12, BB-29, BB-32 |
 | R2 — Dominio | HU-01 | BB-13, BB-14, BB-28, BB-30 |
-| R3 — Tarifa base | HU-01 | BB-03 a BB-11, BB-27, BB-31 |
+| R3 — Tarifa base | HU-01 | BB-03 a BB-11, BB-27, BB-31, BB-32 |
 | R4 — Zona | HU-02 | BB-18, BB-19, BB-31 |
 | R5 — Fin de semana | HU-02, HU-03 | BB-15, BB-16, BB-17, BB-31 |
 | R6 — Descuentos | HU-03 | BB-20 a BB-24, BB-26, BB-31 |
 | R7 — Cupón desconocido | HU-03 | BB-25 |
 | R8 — Piso y redondeo | HU-03 | BB-09, BB-10, BB-20, BB-21, BB-23 a BB-26, BB-31 |
+
