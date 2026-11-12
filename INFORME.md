@@ -176,22 +176,22 @@ El valor inmediatamente inferior a PMAX se cubre con BB-32 (`49,99 kg`). Para un
 
 ### 3.4 Matriz de casos de prueba
 
-Entradas en orden: peso en kg, zona, cliente, día y cupón. `—` significa cupón ausente.
+Entradas en orden: peso en kg, zona, cliente, día y cupón. Los decimales de esta tabla usan punto como literales de Python; `—` significa cupón ausente.
 
 | ID | Requisito | Entradas | Resultado esperado | Técnica |
 |---|---|---|---|---|
-| BB-01 | R1 | `(-0,01, urbana, normal, 1, —)` | `ValueError("peso inválido")` | Partición / límite inferior |
+| BB-01 | R1 | `(-0.01, urbana, normal, 1, —)` | `ValueError("peso inválido")` | Partición / límite inferior |
 | BB-02 | R1 | `(0, urbana, normal, 1, —)` | `ValueError("peso inválido")` | Límite 0 |
-| BB-03 | R1, R3 | `(0,01, urbana, normal, 1, —)` | $6.000 | Límite 0 |
-| BB-04 | R3 | `(2,99, urbana, normal, 1, —)` | $6.000 | Límite L1 inferior |
+| BB-03 | R1, R3 | `(0.01, urbana, normal, 1, —)` | $6.000 | Límite 0 |
+| BB-04 | R3 | `(2.99, urbana, normal, 1, —)` | $6.000 | Límite L1 inferior |
 | BB-05 | R3 | `(3, urbana, normal, 1, —)` | $6.000 | Límite L1 incluido |
-| BB-06 | R3 | `(3,01, urbana, normal, 1, —)` | $9.000 | Límite L1 superior |
-| BB-07 | R3 | `(9,99, urbana, normal, 1, —)` | $9.000 | Límite L2 inferior |
+| BB-06 | R3 | `(3.01, urbana, normal, 1, —)` | $9.000 | Límite L1 superior |
+| BB-07 | R3 | `(9.99, urbana, normal, 1, —)` | $9.000 | Límite L2 inferior |
 | BB-08 | R3 | `(10, urbana, normal, 1, —)` | $9.000 | Límite L2 incluido |
-| BB-09 | R3, R8 | `(10,01, urbana, normal, 1, —)` | $9.000 | Límite L2 superior / proporcionalidad |
-| BB-10 | R3, R8 | `(10,0625, urbana, normal, 1, —)` | $9.100 | Empate de $50: redondeo hacia arriba |
+| BB-09 | R3, R8 | `(10.01, urbana, normal, 1, —)` | $9.000 | Límite L2 superior / proporcionalidad |
+| BB-10 | R3, R8 | `(10.0625, urbana, normal, 1, —)` | $9.100 | Empate de $50: redondeo hacia arriba |
 | BB-11 | R1, R3 | `(50, urbana, normal, 1, —)` | $41.000 | Límite PMAX incluido |
-| BB-12 | R1 | `(50,01, urbana, normal, 1, —)` | `ValueError("peso inválido")` | Límite PMAX superior |
+| BB-12 | R1 | `(50.01, urbana, normal, 1, —)` | `ValueError("peso inválido")` | Límite PMAX superior |
 | BB-13 | R2 | `(4, exterior, normal, 2, —)` | Error por zona inválida | Partición inválida |
 | BB-14 | R2 | `(4, urbana, normal, 0, —)` | Error por día inválido | Límite inferior del día |
 | BB-15 | R5 | `(10, urbana, normal, 6, —)` | $11.000 | Decisión: sábado |
@@ -205,13 +205,13 @@ Entradas en orden: peso en kg, zona, cliente, día y cupón. `—` significa cup
 | BB-23 | R6, R8 | `(10, urbana, frecuente, 1, ENVIO10)` | $7.700 | Decisión: dos descuentos secuenciales |
 | BB-24 | R6, R8 | `(10, urbana, vip, 1, ENVIO10)` | $6.900 | Decisión: VIP y cupón |
 | BB-25 | R7, R8 | `(10, urbana, vip, 1, OTRO)` | $7.700 | Partición: cupón desconocido |
-| BB-26 | R6, R8 | `(0,01, urbana, vip, 1, ENVIO10)` | $5.000 | Piso después de descuentos |
-| BB-27 | R3 | `(10,5, urbana, normal, 1, —)` | $9.400 | Tramo 3 proporcional |
+| BB-26 | R6, R8 | `(0.01, urbana, vip, 1, ENVIO10)` | $5.000 | Piso después de descuentos |
+| BB-27 | R3 | `(10.5, urbana, normal, 1, —)` | $9.400 | Tramo 3 proporcional |
 | BB-28 | R2 | `(10, urbana, normal, 8, —)` | Error por día inválido | Límite superior del día |
 | BB-29 | R1 | `("no-numérico", urbana, normal, 1, —)` | Error de peso | Partición inválida de tipo |
 | BB-30 | R2 | `(10, urbana, normal, 6,5, —)` | Error por día no entero | Partición inválida de tipo |
-| BB-31 | R3–R6, R8 | `(9,5, nacional, frecuente, 7, ENVIO10)` | $13.300 | Decisión combinada con peso decimal |
-| BB-32 | R1, R3 | (49,99, urbana, normal, 1, —) | .000 | Límite inferior de PMAX |
+| BB-31 | R3–R6, R8 | `(9.5, nacional, frecuente, 7, ENVIO10)` | $13.300 | Decisión combinada con peso decimal |
+| BB-32 | R1, R3 | (49.99, urbana, normal, 1, —) | .000 | Límite inferior de PMAX |
 
 ### 3.5 Cálculos manuales de resultados esperados
 
@@ -240,3 +240,101 @@ Entradas en orden: peso en kg, zona, cliente, día y cupón. `—` significa cup
 | R7 — Cupón desconocido | HU-03 | BB-25 |
 | R8 — Piso y redondeo | HU-03 | BB-09, BB-10, BB-20, BB-21, BB-23 a BB-26, BB-31 |
 
+
+
+## Parte 4. Diseño de casos de caja blanca
+
+Esta sección analiza `calc` del código heredado que entrega el parcial, antes de corregirlo. La etiqueta `v1.0.0` y el archivo de código se incorporarán al repositorio en la parte de automatización/configuración; aquí se modela su flujo original con los parámetros personalizados.
+
+### 4.1 Grafo de flujo
+
+```mermaid
+flowchart TD
+  N1[1 Inicio] --> N2{2 p <= 0?}
+  N2 -- Sí --> N4[4 Lanza error de peso]
+  N2 -- No --> N3{3 p > 50?}
+  N3 -- Sí --> N4
+  N3 -- No --> N5{5 p <= L1?}
+  N5 -- Sí --> N6[6 t = 6000]
+  N5 -- No --> N7{7 p <= L2?}
+  N7 -- Sí --> N8[8 t = 9000]
+  N7 -- No --> N9[9 t = 9000 + exceso x 800]
+  N6 --> N10{10 zona urbana?}
+  N8 --> N10
+  N9 --> N10
+  N10 -- Sí --> N11[11 t = t]
+  N10 -- No --> N12{12 zona rural?}
+  N12 -- Sí --> N13[13 sumar recargo rural]
+  N12 -- No --> N14{14 zona nacional?}
+  N14 -- Sí --> N15[15 sumar recargo nacional]
+  N14 -- No --> N16{16 d > 6?}
+  N11 --> N16
+  N13 --> N16
+  N15 --> N16
+  N16 -- Sí --> N17[17 sumar S]
+  N16 -- No --> N18{18 cliente frecuente?}
+  N17 --> N18
+  N18 -- Sí --> N19[19 restar 5 por ciento]
+  N18 -- No --> N20{20 cliente VIP?}
+  N19 --> N20
+  N20 -- Sí --> N21[21 restar DESC_VIP]
+  N20 -- No --> N22{22 cupón presente?}
+  N21 --> N22
+  N22 -- No --> N25{25 t < 5000?}
+  N22 -- Sí --> N23{23 cupón ENVIO10?}
+  N23 -- Sí --> N24[24 restar 10 por ciento]
+  N23 -- No --> N25
+  N24 --> N25
+  N25 -- Sí --> N26[26 t = 5000]
+  N25 -- No --> N27{27 flag?}
+  N26 --> N27
+  N27 -- Sí --> N28[28 imprimir costo]
+  N27 -- No --> N29[29 return]
+  N28 --> N29
+  N4 --> N30[30 Fin]
+  N29 --> N30
+```
+
+### 4.2 Complejidad ciclomática
+
+La guarda `p <= 0 or p > 50` se representa como dos decisiones por la evaluación de cortocircuito. En total hay 14 nodos predicado: las dos comparaciones de peso, los dos tramos, tres comparaciones de zona, día, dos tipos de cliente, presencia y validez del cupón, mínimo y `flag`. El grafo conectado tiene 30 nodos y 43 aristas.
+
+| Método | Cálculo | Resultado |
+|---|---|---:|
+| Aristas y nodos | `M = E − N + 2 = 43 − 30 + 2` | **15** |
+| Nodos predicado | `M = P + 1 = 14 + 1` | **15** |
+| Regiones | 14 regiones interiores más la región exterior | **15** |
+
+### 4.3 Caminos independientes
+
+Los caminos P01–P15 forman una base con 15 recorridos. Se reutilizan los casos BB de la Parte 3; WB-01 cubre la salida de diagnóstico del argumento `flag` del código heredado.
+
+| Camino | Decisión que agrega | Caso representativo | Resultado funcional esperado |
+|---|---|---|---|
+| P01 | Peso `≤ 0` | BB-01 | `ValueError("peso inválido")` |
+| P02 | Peso `> PMAX` | BB-12 | `ValueError("peso inválido")` |
+| P03 | Tramo 1 y ruta urbana base | BB-05 | $6.000 |
+| P04 | Tramo 2 | BB-08 | $9.000 |
+| P05 | Tramo 3 | BB-27 | $9.400 |
+| P06 | Zona rural | BB-18 | $7.200 |
+| P07 | Zona nacional | BB-19 | $9.000 |
+| P08 | Ninguna zona reconocida | BB-13 | Error de zona esperado; el legado no lo lanza |
+| P09 | `d > 6` verdadero | BB-16 | $11.000 para domingo |
+| P10 | Cliente frecuente | BB-20 | $8.600 |
+| P11 | Cliente VIP | BB-21 | $7.700 |
+| P12 | Cupón válido | BB-22 | $8.100 |
+| P13 | Cupón desconocido | BB-25 | $7.700 |
+| P14 | Subtotal menor que $5.000 | BB-26 | $5.000 |
+| P15 | `flag=True` | WB-01: `(10, urbana, normal, 1, None, True)` | Retorna $9.000 e imprime `costo: 9000` |
+
+### 4.4 Casos que cubren sentencias y ramas
+
+**Cobertura de sentencias diseñada:** BB-01 ejecuta la excepción de peso; BB-03, BB-05, BB-08 y BB-27 ejecutan los tres tramos y la ruta urbana; BB-18 y BB-19 ejecutan recargos rurales y nacionales; BB-16 ejecuta el recargo de domingo; BB-20 y BB-21 ejecutan descuentos de cliente; BB-22 y BB-25 ejecutan las ramas de cupón válido y desconocido; BB-26 ejecuta el piso; WB-01 ejecuta la impresión de `flag=True`.
+
+**Cobertura de ramas diseñada:** BB-01/BB-12/BB-05 cubren las dos comprobaciones de peso; BB-05/BB-06/BB-08/BB-27 cubren ambos lados de los límites L1 y L2; BB-03/BB-18/BB-19/BB-13 cubren urbana/rural/nacional y zona no reconocida; BB-16/BB-17 cubren verdadero/falso de `d > 6`; BB-20 y BB-21, junto con BB-05, cubren decisiones de cliente; BB-22/BB-25/BB-05 cubren cupón presente, válido, desconocido y ausente; BB-26/BB-03 cubren el piso; WB-01/BB-05 cubren `flag`. BB-15 añade el sábado, que el legado trata por la rama falsa de `d > 6` aunque R5 requiere recargo.
+
+Estas son coberturas diseñadas. La medición real con pytest-cov y sus evidencias se presentará en la Parte 5.
+
+### 4.5 Caso WB-01 del argumento `flag`
+
+Entrada heredada: `calc(10, "urbana", "normal", 1, None, flag=True)`. El valor de retorno esperado por R1–R8 es $9.000. En `v1.0.0`, además, se imprime `costo: 9000`; esta salida permite ejecutar la rama verdadera de `flag`. La refactorización eliminará el argumento y esa impresión, como solicita la Parte 6.
